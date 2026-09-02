@@ -39,8 +39,12 @@ class Settings(BaseSettings):
     # --- App -------------------------------------------------------------
     CORS_ORIGINS: list[str] = ["http://localhost:5173"]
 
-     # --- Data Mode ---------------------------------------------------
+    # --- Data Mode -------------------------------------------------------
     USE_MOCK_DATA: bool = False
+
+    # --- Redis -----------------------------------------------------------
+    REDIS_HOST: str = "localhost"
+    REDIS_PORT: int = 6379
 
 
 settings = Settings()

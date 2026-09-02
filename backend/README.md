@@ -73,6 +73,10 @@ Check it's alive:
 ```bash
 curl http://localhost:8000/api/fixtures/live
 ```
+Start Redis as a background service
+```bash
+brew services start redis
+```
 
 Running with mock data
 ```bash
@@ -100,3 +104,17 @@ empty — that's expected, not a bug).
 - **Deploy**: any ASGI host works — Fly.io, Railway, Render, or a plain
   VM behind nginx with `uvicorn` + `--workers`. Make sure your host
   supports long-lived WebSocket connections.
+
+## Data Flow Architecture
+[ API-Football / Provider ]
+             │
+   (Poll every 15-20s)
+             ▼
+      [ FastAPI Worker ] ──(Cache TTL 10s)──► [ Redis Cache ]
+             │                                     │
+    (Detects New Events)                     (REST Fallback)
+             │                                     │
+             ▼                                     ▼
+   [ WebSocket Manager ]                  [ Client Browser ]
+             │                                     ▲
+             └──────────(Real-time Push)───────────┘

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import json
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
@@ -11,6 +12,8 @@ from app.event_detector import diff_events
 from app.livescore_client import get_client
 from app.social_poster import broadcast_to_social
 from app.websocket_manager import manager
+
+from app.redis_client import cache_live_matches, get_cached_live_matches
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("livepitch")
@@ -32,8 +35,12 @@ _last_snapshot: dict[str, dict] = {}
 
 @app.get("/api/fixtures/live")
 async def get_live_fixtures():
-    """REST fallback / initial page load — same data the websocket streams."""
-    return {"matches": list(_last_snapshot.values())}
+    """Serve cached live matches to reduce backend processing load."""
+    cached_data = await get_cached_live_matches()
+    if cached_data is not None:
+        return {"matches": cached_data, "source": "redis_cache"}
+        
+    return {"matches": list(_last_snapshot.values()), "source": "memory"}
 
 
 @app.websocket("/ws/live")
@@ -58,16 +65,23 @@ async def poll_loop() -> None:
     client = get_client()
     while True:
         try:
+            # 1. Fetch fresh data from provider (or mock)
             fixtures = await client.fetch_live_fixtures()
+
+            # 2. Store live snapshot in Redis cache with short TTL
+            await cache_live_matches(fixtures)
+            # 3. Detect state changes against in-memory or Redis state
             for match in fixtures:
                 previous = _last_snapshot.get(match["id"])
                 new_events = diff_events(previous, match)
 
                 _last_snapshot[match["id"]] = match
-                await manager.broadcast({"type": "update", "match": match})
 
-                for event in new_events:
-                    await broadcast_to_social(match, event)
+                # 4. Push updates to connected WebSockets
+                if new_events:
+                    await manager.broadcast({"type": "update", "match": match})
+                    for event in new_events:
+                        await broadcast_to_social(match, event)
 
         except Exception:
             logger.exception("Poll loop error")
