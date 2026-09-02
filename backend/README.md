@@ -74,6 +74,10 @@ Check it's alive:
 curl http://localhost:8000/api/fixtures/live
 ```
 
+Running with mock data
+```bash
+USE_MOCK_DATA=true POLL_INTERVAL_SECONDS=5 uvicorn app.main:app --reload --port 8000
+```
 Then run the frontend (`frontend/README.md`) with
 `VITE_WS_URL=ws://localhost:8000/ws/live` and you should see live
 matches flow in as soon as any fixture from your provider is in play

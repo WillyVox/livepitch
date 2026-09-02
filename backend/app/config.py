@@ -39,5 +39,8 @@ class Settings(BaseSettings):
     # --- App -------------------------------------------------------------
     CORS_ORIGINS: list[str] = ["http://localhost:5173"]
 
+     # --- Data Mode ---------------------------------------------------
+    USE_MOCK_DATA: bool = False
+
 
 settings = Settings()

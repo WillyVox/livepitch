@@ -21,6 +21,7 @@ from __future__ import annotations
 import httpx
 
 from app.config import settings
+from app.mock_client import MockClient
 
 
 class ApiFootballClient:
@@ -104,6 +105,9 @@ def _event_type(e: dict) -> str | None:
     return None
 
 
-def get_client() -> ApiFootballClient:
+def get_client() -> ApiFootballClient | MockClient:
     # Swap this for another provider's client if needed.
+    if settings.USE_MOCK_DATA:
+        return MockClient()
     return ApiFootballClient()
+
