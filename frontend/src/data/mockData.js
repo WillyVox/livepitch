@@ -1,0 +1,70 @@
+export const mockLeagues = [
+  { id: 'pl', name: 'Premier League', country: 'England' },
+  { id: 'laliga', name: 'La Liga', country: 'Spain' },
+  { id: 'seriea', name: 'Serie A', country: 'Italy' },
+  { id: 'bundesliga', name: 'Bundesliga', country: 'Germany' },
+  { id: 'ligue1', name: 'Ligue 1', country: 'France' },
+  { id: 'ucl', name: 'Champions League', country: 'Europe' },
+]
+
+export const mockMatches = [
+  {
+    id: 'm1',
+    league: 'Premier League',
+    status: 'LIVE',
+    minute: 67,
+    home: { name: 'Arsenal', score: 2, logo: 'AFC' },
+    away: { name: 'Chelsea', score: 1, logo: 'CFC' },
+    events: [
+      { minute: 12, type: 'goal', team: 'home', player: 'B. Saka' },
+      { minute: 34, type: 'yellow', team: 'away', player: 'M. Caicedo' },
+      { minute: 58, type: 'goal', team: 'away', player: 'N. Jackson' },
+      { minute: 63, type: 'goal', team: 'home', player: 'G. Jesus' },
+    ],
+  },
+  {
+    id: 'm2',
+    league: 'La Liga',
+    status: 'LIVE',
+    minute: 23,
+    home: { name: 'Real Madrid', score: 0, logo: 'RMA' },
+    away: { name: 'Barcelona', score: 0, logo: 'BAR' },
+    events: [{ minute: 19, type: 'yellow', team: 'home', player: 'Tchouameni' }],
+  },
+  {
+    id: 'm3',
+    league: 'Serie A',
+    status: 'HT',
+    minute: 45,
+    home: { name: 'Inter', score: 1, logo: 'INT' },
+    away: { name: 'Juventus', score: 1, logo: 'JUV' },
+    events: [
+      { minute: 28, type: 'goal', team: 'home', player: 'Lautaro' },
+      { minute: 40, type: 'goal', team: 'away', player: 'Vlahovic' },
+    ],
+  },
+  {
+    id: 'm4',
+    league: 'Bundesliga',
+    status: 'UPCOMING',
+    minute: 0,
+    kickoff: '20:30',
+    home: { name: 'Bayern Munich', score: null, logo: 'FCB' },
+    away: { name: 'Dortmund', score: null, logo: 'BVB' },
+    events: [],
+  },
+  {
+    id: 'm5',
+    league: 'Ligue 1',
+    status: 'FT',
+    minute: 90,
+    home: { name: 'PSG', score: 3, logo: 'PSG' },
+    away: { name: 'Marseille', score: 0, logo: 'OM' },
+    events: [
+      { minute: 15, type: 'goal', team: 'home', player: 'Mbappe' },
+      { minute: 52, type: 'goal', team: 'home', player: 'Mbappe' },
+      { minute: 80, type: 'red', team: 'away', player: 'Balerdi' },
+      { minute: 88, type: 'goal', team: 'home', player: 'Dembele' },
+    ],
+  },
+]
