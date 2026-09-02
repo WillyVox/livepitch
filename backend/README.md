@@ -71,7 +71,12 @@ uvicorn app.main:app --reload --port 8000
 
 Check it's alive:
 ```bash
+
+http://localhost:8000/docs
+
 curl http://localhost:8000/api/fixtures/live
+
+curl http://localhost:8000/api/standings/pl
 ```
 Start Redis as a background service
 ```bash

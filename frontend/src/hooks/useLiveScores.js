@@ -1,8 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
-import { mockMatches } from '../data/mockData'
+import { useEffect, useRef, useState } from 'react';
 
 // Point this at your FastAPI backend, e.g. ws://localhost:8000/ws/live
-const WS_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:8000/ws/live'
+const WS_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:8000/ws/live';
 
 /**
  * Connects to the backend WebSocket and keeps a live map of matches
@@ -10,7 +9,7 @@ const WS_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:8000/ws/live'
  * if the backend isn't reachable, so the UI is always demoable.
  */
 export function useLiveScores() {
-  const [matches, setMatches] = useState(mockMatches)
+  const [matches, setMatches] = useState([])
   const [connected, setConnected] = useState(false)
   const socketRef = useRef(null)
 

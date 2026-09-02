@@ -51,6 +51,55 @@ class ApiFootballClient:
             resp.raise_for_status()
             return resp.json().get("response", [])
 
+    async def fetch_standings(self, league_id: int, season: int) -> list[dict]:
+        """
+        GET /standings?league=<id>&season=<year> — API-FOOTBALL returns
+        one table per group/stage; we flatten the first (main) table.
+        """
+        async with httpx.AsyncClient(timeout=15) as client:
+            resp = await client.get(
+                f"{self.base_url}/standings",
+                headers=self.headers,
+                params={"league": league_id, "season": season},
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            response = data.get("response", [])
+            if not response:
+                return []
+            table = response[0]["league"]["standings"][0]
+            return [normalize_standing_row(row) for row in table]
+
+
+# Map our internal league slugs (used in URLs and the frontend) to
+# API-FOOTBALL's numeric league IDs. Extend this as you add leagues.
+LEAGUE_ID_MAP = {
+    "pl": 39,          # Premier League
+    "laliga": 140,      # La Liga
+    "seriea": 135,       # Serie A
+    "bundesliga": 78,   # Bundesliga
+    "ligue1": 61,        # Ligue 1
+    "ucl": 2,             # Champions League
+}
+
+
+def normalize_standing_row(row: dict) -> dict:
+    """Flatten an API-FOOTBALL standings row into the frontend's table shape."""
+    all_stats = row["all"]
+    return {
+        "rank": row["rank"],
+        "team": row["team"]["name"],
+        "played": all_stats["played"],
+        "win": all_stats["win"],
+        "draw": all_stats["draw"],
+        "loss": all_stats["lose"],
+        "gf": all_stats["goals"]["for"],
+        "ga": all_stats["goals"]["against"],
+        "points": row["points"],
+        # API-FOOTBALL gives form as a string like "WWDLW"
+        "form": list(row.get("form") or ""),
+    }
+
 
 def normalize_fixture(raw: dict) -> dict:
     """
@@ -110,4 +159,3 @@ def get_client() -> ApiFootballClient | MockClient:
     if settings.USE_MOCK_DATA:
         return MockClient()
     return ApiFootballClient()
-

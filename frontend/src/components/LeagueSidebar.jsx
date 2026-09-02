@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { mockLeagues } from '../data/mockData'
 
 export default function LeagueSidebar({ selected, onSelect }) {
@@ -15,18 +16,30 @@ export default function LeagueSidebar({ selected, onSelect }) {
           All matches
         </button>
         {mockLeagues.map((league) => (
-          <button
+          <div
             key={league.id}
-            onClick={() => onSelect(league.name)}
-            className={`shrink-0 rounded-sm px-3 py-2 text-left text-sm transition ${
-              selected === league.name
-                ? 'bg-pitch-surface2 text-pitch-text'
-                : 'text-pitch-muted hover:text-pitch-text'
+            className={`group flex shrink-0 items-center justify-between rounded-sm px-3 py-2 transition ${
+              selected === league.name ? 'bg-pitch-surface2' : 'hover:bg-pitch-surface2/50'
             }`}
           >
-            <span className="block">{league.name}</span>
-            <span className="hidden text-xs text-pitch-muted md:block">{league.country}</span>
-          </button>
+            <button
+              onClick={() => onSelect(league.name)}
+              className={`text-left text-sm ${
+                selected === league.name ? 'text-pitch-text' : 'text-pitch-muted group-hover:text-pitch-text'
+              }`}
+            >
+              <span className="block">{league.name}</span>
+              <span className="hidden text-xs text-pitch-muted md:block">{league.country}</span>
+            </button>
+            <Link
+              to={`/table/${league.id}`}
+              title={`${league.name} table`}
+              className="ml-2 shrink-0 text-xs text-pitch-muted transition hover:text-pitch-greenBright"
+              onClick={(e) => e.stopPropagation()}
+            >
+              Table
+            </Link>
+          </div>
         ))}
       </nav>
     </aside>

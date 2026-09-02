@@ -4,12 +4,14 @@ import asyncio
 import logging
 import json
 
+import datetime
+
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.event_detector import diff_events
-from app.livescore_client import get_client
+from app.livescore_client import LEAGUE_ID_MAP, get_client
 from app.social_poster import broadcast_to_social
 from app.websocket_manager import manager
 
@@ -39,9 +41,41 @@ async def get_live_fixtures():
     cached_data = await get_cached_live_matches()
     if cached_data is not None:
         return {"matches": cached_data, "source": "redis_cache"}
-        
+
     return {"matches": list(_last_snapshot.values()), "source": "memory"}
 
+_standings_cache: dict[str, dict] = {}
+STANDINGS_CACHE_SECONDS = 60 * 30  # standings only need refreshing a few times a day
+
+@app.get("/api/standings/{league_id}")
+async def get_standings(league_id: str, season: int | None = None):
+    """
+    league_id is our internal slug (pl, laliga, seriea, ...) — see
+    LEAGUE_ID_MAP in app/livescore_client.py. Cached for 30 minutes since
+    a table doesn't meaningfully change mid-poll-cycle.
+    """
+    if league_id not in LEAGUE_ID_MAP:
+        return {"standings": [], "error": f"Unknown league_id '{league_id}'"}
+
+    season = season or datetime.date.today().year
+    cache_key = f"{league_id}:{season}"
+    cached = _standings_cache.get(cache_key)
+    now = datetime.datetime.utcnow()
+
+    if cached and (now - cached["fetched_at"]).total_seconds() < STANDINGS_CACHE_SECONDS:
+        return {"standings": cached["data"]}
+
+    try:
+        client = get_client()
+        standings = await client.fetch_standings(LEAGUE_ID_MAP[league_id], season)
+        _standings_cache[cache_key] = {"data": standings, "fetched_at": now}
+        return {"standings": standings}
+    except Exception:
+        logger.exception("Failed to fetch standings for %s", league_id)
+        # Serve stale cache rather than nothing, if we have it.
+        if cached:
+            return {"standings": cached["data"]}
+        return {"standings": [], "error": "Could not fetch standings right now"}
 
 @app.websocket("/ws/live")
 async def ws_live(websocket: WebSocket):

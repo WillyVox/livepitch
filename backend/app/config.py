@@ -40,7 +40,11 @@ class Settings(BaseSettings):
     CORS_ORIGINS: list[str] = ["http://localhost:5173"]
 
     # --- Data Mode -------------------------------------------------------
-    USE_MOCK_DATA: bool = False
+    # When true, get_client() returns MockClient instead of hitting the
+    # real API — lets you build/demo the whole app without an API key
+    # or burning your provider's rate limit. Flip to false once you're
+    # ready to go live.
+    USE_MOCK_DATA: bool = True
 
     # --- Redis -----------------------------------------------------------
     REDIS_HOST: str = "localhost"
